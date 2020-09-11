@@ -1,0 +1,12 @@
+{
+  "name": "@entan.gl/vice-rainbow-monitor",
+  "version": "1.0.0",
+  "description": "Color monitor for VICE",
+  "main": "index.js",
+  "repository": "https://github.com/empathicqubit/vice-rainbow-monitor",
+  "author": "empathicqubit <empathicqubit@entan.gl>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^14.6.0"
+  }
+}
