@@ -1,6 +1,6 @@
 {
   "name": "@entan.gl/vice-rainbow-monitor",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Color monitor for VICE",
   "main": "index.js",
   "repository": "https://github.com/empathicqubit/vice-rainbow-monitor",
