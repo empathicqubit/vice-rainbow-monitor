@@ -1,4 +1,5 @@
 const net = require('net');
+const colors = require('colors');
 
 const contentMangler = (data) => {
     data = data.replace(/[^ -~\s]+/g, '');
@@ -23,7 +24,7 @@ const contentMangler = (data) => {
     const memrex = /^(\s*>)([C])(:)([0-9a-f]{4})(\s{2}(([0-9a-f]{2}\s){4}\s){4}\s)(.{16})/gim;
     let memmatch;
     while(memmatch = memrex.exec(data)) {
-        const newString;
+        const newString = [];
         newString.push(memmatch[1], memmatch[2], memmatch[3], memmatch[4]);
         const byteColors = [];
         let i = 0;
@@ -55,5 +56,53 @@ const contentMangler = (data) => {
     return data;
 };
 
-const textAddress = process.argv[process.argv.indexOf('-binarymonitoraddress') + 1];
-const sock = new net.Socket();
+const syntax = () => {
+    console.log(`Syntax: vice-rainbow-monitor -remotemonitoraddress <host:port>`);
+};
+
+const main = async() => {
+    const argIndex = process.argv.indexOf('-remotemonitoraddress');
+    if(argIndex == -1) {
+        syntax();
+        return 1;
+    }
+
+    const remoteMonitorAddress = process.argv[argIndex + 1];
+
+    if(!remoteMonitorAddress) {
+        syntax();
+        return 1;
+    }
+
+    const hostPort = /^(.+):([0-9]+)$/.exec(remoteMonitorAddress);
+    if(!hostPort) {
+        syntax();
+        return 1;
+    }
+    const host = hostPort[1];
+    const port = hostPort[2];
+
+    const sock = new net.Socket({});
+    sock.connect({
+        host: host,
+        port: port,
+    });
+
+    sock.on('data', (data) => {
+        process.stdout.write(contentMangler(data.toString()));
+    });
+
+    process.stdin.pipe(sock);
+
+    return new Promise((res, rej) => {
+        sock.on('close', () => res());
+        sock.on('error', rej);
+    });
+}
+
+main()
+    .then(code => process.exit(code || 0))
+    .catch((e) => {
+        console.error(e);
+        process.exit(1);
+    });
