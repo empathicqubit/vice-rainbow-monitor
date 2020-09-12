@@ -95,13 +95,13 @@ const main = async() => {
     process.stdin.pipe(sock);
 
     return new Promise((res, rej) => {
-        sock.on('close', () => res());
+        sock.on('close', () => res(0));
         sock.on('error', rej);
     });
 }
 
 main()
-    .then(code => process.exit(code || 0))
+    .then(code => process.exit(code))
     .catch((e) => {
         console.error(e);
         process.exit(1);
