@@ -1,3 +1,4 @@
+/*global Promise*/
 const net = require('net');
 const colors = require('colors');
 
@@ -103,7 +104,7 @@ const main = async() => {
     const rateLimitIndex = process.argv.indexOf(`-ratelimit`);
     opts.rateLimit = 0;
     if(argIndex != -1) {
-        rateLimit = parseInt(process.argv[rateLimitIndex + 1]);
+        opts.rateLimit = parseInt(process.argv[rateLimitIndex + 1]);
     }
 
     opts.condensedTrace = process.argv.indexOf(`-condensedtrace`) != -1;

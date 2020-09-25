@@ -8,6 +8,7 @@
   "bin": "./index.js",
   "license": "MIT",
   "scripts": {
+      "prepublishOnly": "npm run lint",
     "lint": "eslint .",
     "test": "node ./index.js"
   },
