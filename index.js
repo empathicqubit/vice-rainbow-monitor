@@ -1,11 +1,24 @@
 const net = require('net');
 const colors = require('colors');
 
-const contentMangler = (data) => {
+const contentMangler = (data, opts) => {
     data = data.replace(/[^ -~\s]+/g, '');
 
-    const asmrex = /^\.([C])(:)([0-9a-f]){4}\s{2}(([0-9a-f]+\s){1,4})\s*(\w{3})\s.*$/gim
+    const asmpat = '\\s+\\.([C])(:)([0-9a-f]){4}\\s{2}(([0-9a-f]+\\s){1,4})\\s*(\\w{3})\\s.*$'
+
     let replacements = {};
+
+    if(opts.condensedTrace) {
+        const checkrex = new RegExp('#([0-9]+)\\s+\\((Trace|Stop\\s+on)\\s+(\\w+)\\s+([0-9a-f]+)\\)\\s+([0-9]+)/\\$([0-9a-f]+),\\s+([0-9]+)/\\$([0-9a-f]+)' + asmpat, 'gim');
+        let checkmatch;
+        while(checkmatch = checkrex.exec(data)) {
+            if(checkmatch[2] == 'Trace') {
+                replacements[checkmatch[0]] = `#${checkmatch[1]} LIN ${checkmatch[5]} CYC ${checkmatch[7]}`;
+            }
+        }
+    }
+
+    const asmrex = new RegExp(asmpat, 'gim');
     let asmmatch;
     while(asmmatch = asmrex.exec(data)) {
         const cmd = asmmatch[6];
@@ -20,7 +33,6 @@ const contentMangler = (data) => {
         }
     }
 
-    // FIXME DRY error. Should push all regexes into common location.
     const memrex = /^(\s*>)([C])(:)([0-9a-f]{4})(\s{2}(([0-9a-f]{2}\s){4}\s){4}\s)(.{16})/gim;
     let memmatch;
     while(memmatch = memrex.exec(data)) {
@@ -58,29 +70,43 @@ const contentMangler = (data) => {
 
 const syntax = () => {
     console.log(`Syntax: vice-rainbow-monitor -remotemonitoraddress <host:port>`);
+    console.log();
+    console.log(`Other options:`);
+    console.log(`-condensedtrace`);
+    console.log(`\tEcho a short version of the trace point information.`);
 };
 
 const main = async() => {
+    const opts = {};
+
     const argIndex = process.argv.indexOf('-remotemonitoraddress');
     if(argIndex == -1) {
         syntax();
         return 1;
     }
 
-    const remoteMonitorAddress = process.argv[argIndex + 1];
+    opts.remoteMonitorAddress = process.argv[argIndex + 1];
 
-    if(!remoteMonitorAddress) {
+    if(!opts.remoteMonitorAddress) {
         syntax();
         return 1;
     }
 
-    const hostPort = /^(.+):([0-9]+)$/.exec(remoteMonitorAddress);
+    const hostPort = /^(.+):([0-9]+)$/.exec(opts.remoteMonitorAddress);
     if(!hostPort) {
         syntax();
         return 1;
     }
     const host = hostPort[1];
     const port = hostPort[2];
+
+    const rateLimitIndex = process.argv.indexOf(`-ratelimit`);
+    opts.rateLimit = 0;
+    if(argIndex != -1) {
+        rateLimit = parseInt(process.argv[rateLimitIndex + 1]);
+    }
+
+    opts.condensedTrace = process.argv.indexOf(`-condensedtrace`) != -1;
 
     const sock = new net.Socket({});
     sock.connect({
@@ -89,7 +115,7 @@ const main = async() => {
     });
 
     sock.on('data', (data) => {
-        process.stdout.write(contentMangler(data.toString()));
+        process.stdout.write(contentMangler(data.toString(), opts));
     });
 
     process.stdin.pipe(sock);
