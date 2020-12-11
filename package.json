@@ -1,6 +1,6 @@
 {
   "name": "@entan.gl/vice-rainbow-monitor",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Color monitor for VICE",
   "main": "index.js",
   "repository": "https://github.com/empathicqubit/vice-rainbow-monitor",
@@ -8,7 +8,7 @@
   "bin": "./index.js",
   "license": "MIT",
   "scripts": {
-      "prepublishOnly": "npm run lint",
+    "prepublishOnly": "npm run lint",
     "lint": "eslint .",
     "test": "node ./index.js"
   },
@@ -17,6 +17,7 @@
     "eslint": "^7.8.1"
   },
   "dependencies": {
-    "colors": "^1.4.0"
+    "colors": "^1.4.0",
+    "death": "^1.1.0"
   }
 }

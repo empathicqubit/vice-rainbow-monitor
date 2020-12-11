@@ -1,6 +1,7 @@
 /*global Promise*/
 const net = require('net');
 const colors = require('colors');
+const death = require('death');
 
 const contentMangler = (data, opts) => {
     data = data.replace(/[^ -~\s]+/g, '');
@@ -10,11 +11,11 @@ const contentMangler = (data, opts) => {
     let replacements = {};
 
     if(opts.condensedTrace) {
-        const checkrex = new RegExp('#([0-9]+)\\s+\\((Trace|Stop\\s+on)\\s+(\\w+)\\s+([0-9a-f]+)\\)\\s+([0-9]+)/\\$([0-9a-f]+),\\s+([0-9]+)/\\$([0-9a-f]+)' + asmpat, 'gim');
+        const checkrex = new RegExp('\\s*#([0-9]+)\\s+\\((Trace|Stop\\s+on)\\s+(\\w+)\\s+([0-9a-f]+)\\)\\s+([0-9]+)/\\$([0-9a-f]+),\\s+([0-9]+)/\\$([0-9a-f]+)\\s*' + asmpat, 'gim');
         let checkmatch;
         while(checkmatch = checkrex.exec(data)) {
             if(checkmatch[2] == 'Trace') {
-                replacements[checkmatch[0]] = `#${checkmatch[1]} LIN ${checkmatch[5]} CYC ${checkmatch[7]}`;
+                replacements[checkmatch[0]] = `#${checkmatch[1]} LIN ${checkmatch[5]} CYC ${checkmatch[7]} `;
             }
         }
     }
@@ -115,6 +116,10 @@ const main = async() => {
         port: port,
     });
 
+    death((signal, err) => {
+        sock.end();
+    });
+    
     sock.on('data', (data) => {
         process.stdout.write(contentMangler(data.toString(), opts));
     });
