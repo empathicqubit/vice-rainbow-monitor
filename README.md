@@ -6,6 +6,6 @@ Syntax: vice-rainbow-monitor -remotemonitoraddress <host:port>
 
 ## Installing
 
-`npm install -g vice-rainbow-monitor`
+`npm install -g @entan.gl/vice-rainbow-monitor`
 
 Check it out on [npm](https://www.npmjs.com/package/@entan.gl/vice-rainbow-monitor)
